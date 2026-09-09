@@ -1,0 +1,10 @@
+{
+  "name": "sevntracker",
+  "version": "9.0.0",
+  "description": "Catat dan analisis pengeluaran harian hingga bulanan secara offline",
+  "private": true,
+  "scripts": {
+    "start": "node serve.js",
+    "dev": "node serve.js"
+  }
+}
