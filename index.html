@@ -1842,7 +1842,7 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
     </div>
 
     <!-- localStorage Warning Banner -->
-    <div class="card" style="border-color: rgba(255,197,66,.4); background: rgba(255,197,66,.05);">
+    <div class="card" id="local-storage-warning-card" style="border-color: rgba(255,197,66,.4); background: rgba(255,197,66,.05);">
       <div style="display:flex; align-items:flex-start; gap:12px;">
         <span style="font-size:22px; flex-shrink:0;">⚠️</span>
         <div>
@@ -3042,6 +3042,13 @@ function initSupabaseAuth() {
   });
 }
 
+function updateLocalStorageWarningUI() {
+  const warningCard = document.getElementById('local-storage-warning-card');
+  if (!warningCard) return;
+  const isSynced = Boolean(currentAuthUser && LS.get('cloud_last_sync'));
+  warningCard.style.display = isSynced ? 'none' : 'block';
+}
+
 function updateCloudAccountUI() {
   const loggedOutView = document.getElementById('cloud-logged-out-view');
   const loggedInView = document.getElementById('cloud-logged-in-view');
@@ -3080,6 +3087,7 @@ function updateCloudAccountUI() {
       syncBadge.style.borderColor = 'var(--border)';
     }
   }
+  updateLocalStorageWarningUI();
 }
 
 function setCloudSyncStatus(status, detail) {
@@ -3116,6 +3124,7 @@ function setCloudSyncStatus(status, detail) {
     syncBadge.style.background = 'var(--bg3)';
     syncBadge.style.borderColor = 'var(--border)';
   }
+  updateLocalStorageWarningUI();
 }
 
 function getSyncPayload() {
@@ -3531,6 +3540,7 @@ async function handleLogout() {
     await supabaseClient.auth.signOut();
   }
   currentAuthUser = null;
+  localStorage.removeItem('cloud_last_sync');
   updateCloudAccountUI();
   showToast(t('toast_logout_success'), 'info');
 }
@@ -3539,6 +3549,7 @@ async function handleLogout() {
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setupEventListeners();
+  updateLocalStorageWarningUI();
   initSupabaseAuth();
   registerSW();
   setupInstallPrompt();
