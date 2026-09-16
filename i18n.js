@@ -379,6 +379,17 @@ const translations = {
     ai_mode_c_label: "Ceritakan pemasukan / transfer",
     ai_mode_c_ph: "cth: gajian 200000 yen masuk ke JPY Cash / pindah 5000 yen dari JPY Cash ke GoPay",
     ai_mode_c_hint: "Cocok untuk pemasukan (gaji, bonus, cashback) atau transfer antar dompet. Gemini otomatis kebuka setelah copy.",
+
+    // ── Receipt Scan Animation Modal ──
+    receipt_scan_anim_title: "Menganalisis Struk...",
+    receipt_scan_anim_desc: "Sistem sedang membaca toko, tanggal, item barang, dan total belanja Anda.",
+    receipt_scan_time_label: "⏱️ Waktu Proses:",
+    receipt_scan_status_label: "⚡ Status:",
+    receipt_scan_status_prep: "Menyiapkan...",
+    receipt_scan_status_analyzing: "Menganalisis struk...",
+    receipt_scan_status_optimizing: "Mengoptimalkan deteksi...",
+    receipt_scan_cancel_btn: "Batal",
+    receipt_scan_done_toast: "✨ Selesai dalam {secs}s!",
   },
   en: {
     // ── Navigation ──
@@ -759,6 +770,17 @@ const translations = {
     ai_mode_c_label: "Describe income / transfer",
     ai_mode_c_ph: "e.g.: received salary 200000 yen to JPY Cash / transfer 5000 yen from JPY Cash to GoPay",
     ai_mode_c_hint: "Suitable for income (salary, bonus, cashback) or inter-wallet transfers. Gemini opens automatically after copy.",
+
+    // ── Receipt Scan Animation Modal ──
+    receipt_scan_anim_title: "Analyzing Receipt...",
+    receipt_scan_anim_desc: "Scanning store, date, purchased items, and total automatically.",
+    receipt_scan_time_label: "⏱️ Elapsed Time:",
+    receipt_scan_status_label: "⚡ Status:",
+    receipt_scan_status_prep: "Preparing...",
+    receipt_scan_status_analyzing: "Analyzing receipt...",
+    receipt_scan_status_optimizing: "Optimizing detection...",
+    receipt_scan_cancel_btn: "Cancel",
+    receipt_scan_done_toast: "✨ Completed in {secs}s!",
   },
   ja: {
     // ── Navigation ──
@@ -1139,6 +1161,17 @@ const translations = {
     ai_mode_c_label: "収入/振替を説明",
     ai_mode_c_ph: "例: 給料200000円がJPY Cashに入金 / JPY CashからGopayに5000円振替",
     ai_mode_c_hint: "収入（給料、ボーナス、キャッシュバック）やウォレット間の振替に最適。コピー後にGeminiが自動で開きます。",
+
+    // ── Receipt Scan Animation Modal ──
+    receipt_scan_anim_title: "レシート解析中...",
+    receipt_scan_anim_desc: "店舗名、日付、品目、合計金額を自動解析しています。",
+    receipt_scan_time_label: "⏱️ 処理時間:",
+    receipt_scan_status_label: "⚡ ステータス:",
+    receipt_scan_status_prep: "準備中...",
+    receipt_scan_status_analyzing: "レシート解析中...",
+    receipt_scan_status_optimizing: "検出を最適化中...",
+    receipt_scan_cancel_btn: "キャンセル",
+    receipt_scan_done_toast: "✨ {secs}秒で完了しました！",
   }
 };
 

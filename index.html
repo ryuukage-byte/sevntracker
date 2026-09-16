@@ -2266,7 +2266,7 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
       <div style="display:flex; align-items:center; gap:8px">
         <div id="receipt-gemini-status" style="font-size:11px; padding:4px 10px; border-radius:20px; font-weight:600; display:flex; align-items:center; gap:6px; background:rgba(79,174,134,.15); color:var(--success); border:1px solid rgba(79,174,134,.3)">
           <span style="width:7px; height:7px; border-radius:50%; background:var(--success); display:inline-block"></span>
-          <span id="receipt-status-text">Gemini AI Siap</span>
+          <span id="receipt-status-text">AI Scanner Siap</span>
         </div>
         <button type="button" class="btn btn-ghost btn-sm" style="font-size:11px; padding:3px 8px; color:var(--text2); border:1px solid var(--border2); border-radius:12px" onclick="toggleReceiptApiKeyBanner()" title="Ganti / Cek API Key">⚙️ Key</button>
       </div>
@@ -2381,8 +2381,8 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
       </div>
     </div>
     
-    <div class="receipt-anim-title" id="receipt-scan-anim-title">Menganalisis Struk...</div>
-    <div class="receipt-anim-desc" id="receipt-scan-anim-desc">AI sedang membaca toko, tanggal, item barang, dan total belanja Anda.</div>
+    <div class="receipt-anim-title" id="receipt-scan-anim-title" data-i18n="receipt_scan_anim_title">Menganalisis Struk...</div>
+    <div class="receipt-anim-desc" id="receipt-scan-anim-desc" data-i18n="receipt_scan_anim_desc">Sistem sedang membaca toko, tanggal, item barang, dan total belanja Anda.</div>
     
     <div class="receipt-anim-progress-wrap">
       <div class="receipt-anim-progress-bar"></div>
@@ -2391,17 +2391,17 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
     <!-- Live Telemetry & Model Status -->
     <div id="receipt-scan-telemetry" style="display:flex; flex-direction:column; gap:4px; margin:10px 0 6px; width:100%; max-width:280px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:11px; text-align:left">
       <div style="display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace">
-        <span style="color:var(--text2)">⏱️ Waktu Proses:</span>
+        <span style="color:var(--text2)" data-i18n="receipt_scan_time_label">⏱️ Waktu Proses:</span>
         <span id="receipt-scan-timer" style="color:var(--accent2); font-weight:700">0.0s</span>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace">
-        <span style="color:var(--text2)">📡 Model Aktif:</span>
-        <span id="receipt-scan-model-badge" style="color:var(--text); font-weight:600; max-width:145px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">Menyiapkan...</span>
+        <span style="color:var(--text2)" data-i18n="receipt_scan_status_label">⚡ Status:</span>
+        <span id="receipt-scan-model-badge" style="color:var(--text); font-weight:600; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">Menyiapkan...</span>
       </div>
       <div id="receipt-scan-log" style="font-size:10px; color:var(--text3); margin-top:2px; line-height:1.3; display:none"></div>
     </div>
 
-    <button type="button" class="receipt-anim-cancel" onclick="cancelReceiptScan()">Batal</button>
+    <button type="button" class="receipt-anim-cancel" onclick="cancelReceiptScan()" data-i18n="receipt_scan_cancel_btn">Batal</button>
   </div>
 </div>
 
@@ -5698,9 +5698,18 @@ window.loadGeminiApiKeyInput = function() {
 let _receiptScanAbortController = null;
 let _receiptScanTimerInterval = null;
 
-function updateScanTelemetryModel(modelName) {
+function updateScanTelemetryStatus(statusText) {
   const el = document.getElementById('receipt-scan-model-badge');
-  if (el) el.textContent = modelName || 'Menyiapkan...';
+  if (el) el.textContent = statusText || (typeof t === 'function' ? t('receipt_scan_status_analyzing') : 'Menganalisis struk...');
+}
+
+function updateScanTelemetryModel(modelOrStatus) {
+  // Never expose AI provider or model name to the user during photo scanning
+  if (!modelOrStatus || modelOrStatus === 'Menyiapkan...') {
+    updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_prep') : 'Menyiapkan...');
+  } else {
+    updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_analyzing') : 'Menganalisis struk...');
+  }
 }
 
 function logScanFallback(msg) {
@@ -5765,7 +5774,7 @@ async function startReceiptScan() {
   const logEl = document.getElementById('receipt-scan-log');
   if (timerEl) timerEl.textContent = '0.0s';
   if (logEl) { logEl.style.display = 'none'; logEl.textContent = ''; }
-  updateScanTelemetryModel('Menyiapkan...');
+  updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_prep') : 'Menyiapkan...');
 
   if (_receiptScanTimerInterval) clearInterval(_receiptScanTimerInterval);
   _receiptScanTimerInterval = setInterval(() => {
@@ -5795,7 +5804,10 @@ async function startReceiptScan() {
     openModal('scan-receipt-sheet');
     renderReceiptResults(parsedData);
     const totalSecs = ((Date.now() - scanStartTime) / 1000).toFixed(1);
-    showToast(`✨ Selesai dalam ${totalSecs}s! (${state.geminiModel})`, 'success');
+    const toastMsg = typeof t === 'function' && t('receipt_scan_done_toast')
+      ? t('receipt_scan_done_toast').replace('{secs}', totalSecs)
+      : `✨ Selesai dalam ${totalSecs}s!`;
+    showToast(toastMsg, 'success');
   } catch (err) {
     closeReceiptScanAnimModal();
     _receiptScanAbortController = null;
@@ -5844,7 +5856,7 @@ async function callOpenRouterReceiptAPI(dataUrl, apiKey, signal = null) {
 
   const candidateModels = getTierCandidateModels(state.aiTier || 'low');
   const model = (candidateModels && candidateModels[0]) || state.geminiModel || 'google/gemini-2.5-flash-lite';
-  updateScanTelemetryModel(model);
+  updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_analyzing') : 'Menganalisis struk...');
   const payload = {
     model: model,
     messages: [
@@ -5940,10 +5952,15 @@ async function callGeminiReceiptAPI(dataUrl, apiKey, signal = null) {
   let lastError = null;
   let triedModels = [];
 
-  for (const model of candidateModels) {
+  for (let i = 0; i < candidateModels.length; i++) {
+    const model = candidateModels[i];
     try {
       triedModels.push(model);
-      updateScanTelemetryModel(model);
+      if (i === 0) {
+        updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_analyzing') : 'Menganalisis struk...');
+      } else {
+        updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_optimizing') : 'Mengoptimalkan deteksi...');
+      }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
       
       const modelPayload = JSON.parse(JSON.stringify(payload));
@@ -6013,8 +6030,9 @@ async function callGeminiReceiptAPI(dataUrl, apiKey, signal = null) {
 
         // If model not found, or model does not support image modality (HTTP 404 or 400):
         if (res.status === 404 || res.status === 400 || errMsg.toLowerCase().includes('not found') || errMsg.toLowerCase().includes('not supported') || errMsg.toLowerCase().includes('modality')) {
-          logScanFallback(`${model} (${res.status}): beralih ke model berikutnya...`);
-          lastError = new Error(`Model ${model}: ${errMsg}`);
+          updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_optimizing') : 'Mengoptimalkan deteksi...');
+          logScanFallback('Mengoptimalkan pembacaan, mencoba metode pemindaian alternatif...');
+          lastError = new Error(`Pemrosesan gagal: ${errMsg}`);
           continue; // Seamlessly try next candidate!
         }
 
@@ -6023,7 +6041,7 @@ async function callGeminiReceiptAPI(dataUrl, apiKey, signal = null) {
 
       const resData = await res.json();
       const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) throw new Error('AI tidak mengembalikan hasil teks');
+      if (!rawText) throw new Error('Sistem tidak mengembalikan hasil teks');
 
       // Success! Remember this working model for future calls
       if (state.geminiModel !== model) {
@@ -6039,12 +6057,13 @@ async function callGeminiReceiptAPI(dataUrl, apiKey, signal = null) {
       if (e.message?.includes('Rate Limit') || e.message?.includes('Akses ditolak / API Key tidak valid')) {
         throw e;
       }
-      logScanFallback(`${model} (${e.message || 'gagal'}), mencoba alternatif...`);
+      updateScanTelemetryStatus(typeof t === 'function' ? t('receipt_scan_status_optimizing') : 'Mengoptimalkan deteksi...');
+      logScanFallback('Menyesuaikan deteksi foto, mencoba kembali...');
       continue;
     }
   }
 
-  throw lastError || new Error(`Gagal menghubungi Gemini API (Sudah mencoba model: ${triedModels.slice(0, 3).join(', ')})`);
+  throw lastError || new Error('Gagal memproses struk. Silakan coba kembali atau gunakan foto yang lebih jelas.');
 }
 
 async function callOpenRouterTextAPI(apiKey, prompt, imagePart = null) {
@@ -6887,7 +6906,7 @@ function showToast(msg, type = 'info') {
 
 /* ── PWA ───────────────────────────────────── */
 // Ubah angka ini kalau mau force update service worker cache
-const SW_VERSION = '20260531';
+const SW_VERSION = '20260916';
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
