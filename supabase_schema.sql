@@ -4,6 +4,8 @@
 -- ================================================================
 
 -- 1. Buat tabel user_sync
+-- Kolom data JSONB menyimpan: transaksi, dompet, shortcut, budget, kurs, tema,
+-- serta kredensial/pengaturan privat per-akun (geminiApiKey, geminiModel, aiTier, tgToken, tgChatId).
 CREATE TABLE IF NOT EXISTS public.user_sync (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     data JSONB NOT NULL DEFAULT '{}'::jsonb,

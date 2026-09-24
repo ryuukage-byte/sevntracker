@@ -9,7 +9,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SevnTracker">
   <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="./icons/favicon-48x48.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
   <title>SevnTracker v9</title>
   
   <style>
@@ -140,7 +143,18 @@ a { color: inherit; text-decoration: none; }
   font-size: 18px;
   flex-shrink: 0;
   box-shadow: var(--neu-out-sm);
+  overflow: hidden;
 }
+.brand-logo-img {
+  width: 22px; height: 22px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.logo-light { display: none; }
+[data-theme="light"] .logo-dark { display: none; }
+[data-theme="light"] .logo-light { display: block; }
 .brand-title { font-family: 'Zen Old Mincho', serif; font-size: clamp(15px, 4vw, 17px); font-weight: 600; letter-spacing: .2px; line-height: 1.1; color: var(--text); }
 .brand-sub { font-size: 9.5px; color: var(--text3); font-family: 'JetBrains Mono', monospace; letter-spacing: .9px; margin-top: 3px; font-weight: 600; }
 .brand-ig {
@@ -1207,6 +1221,10 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
   font-size: 20px;
   box-shadow: var(--neu-out-sm);
   flex-shrink: 0;
+  overflow: hidden;
+}
+.sidebar-brand-icon .brand-logo-img {
+  width: 25px; height: 25px;
 }
 .sidebar-brand-title { font-family: 'Zen Old Mincho', serif; font-size: 17px; font-weight: 600; color: var(--text); line-height: 1.1; }
 .sidebar-brand-sub { font-size: 9.5px; color: var(--text3); font-family: 'JetBrains Mono', monospace; letter-spacing: .9px; margin-top: 3px; font-weight: 600; }
@@ -1505,7 +1523,10 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
 <!-- DESKTOP SIDEBAR NAV (hidden on mobile, shown ≥1024px via CSS) -->
 <nav class="desktop-sidebar-nav" id="desktop-sidebar">
   <div class="sidebar-brand">
-    <div class="sidebar-brand-icon">💸</div>
+    <div class="sidebar-brand-icon">
+      <img src="./icons/logo-mark.png" alt="SevnTracker Logo" class="brand-logo-img logo-dark">
+      <img src="./icons/logo-mark-light.png" alt="SevnTracker Logo" class="brand-logo-img logo-light">
+    </div>
     <div>
       <div class="sidebar-brand-title">SevnTracker</div>
       <div class="sidebar-brand-sub" data-i18n="sidebar_subtitle">EXPENSE TRACKER v9</div>
@@ -1563,7 +1584,10 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
   <!-- HEADER -->
   <header class="app-header">
     <div class="header-brand">
-      <div class="brand-icon">💸</div>
+      <div class="brand-icon">
+        <img src="./icons/logo-mark.png" alt="SevnTracker Logo" class="brand-logo-img logo-dark">
+        <img src="./icons/logo-mark-light.png" alt="SevnTracker Logo" class="brand-logo-img logo-light">
+      </div>
       <div>
         <div class="brand-title">SevnTracker</div>
         <a class="brand-sub brand-ig" href="https://www.instagram.com/musabds?igsh=ejh2djJpampoZGE1" target="_blank" rel="noopener">@musabds</a>
@@ -3142,6 +3166,11 @@ function getSyncPayload() {
     darkMode: state.darkMode ?? true,
     wallets: state.wallets || [],
     catNameMap: state.catNameMap || {},
+    geminiApiKey: state.geminiApiKey || '',
+    geminiModel: state.geminiModel || '',
+    aiTier: state.aiTier || 'low',
+    telegramToken: state.telegramToken || '',
+    telegramChatId: state.telegramChatId || '',
   };
 }
 
@@ -3239,6 +3268,32 @@ async function pullFromSupabase(isManual = false) {
         state.darkMode = cloudData.darkMode;
         LS.set('darkMode', state.darkMode);
         applyTheme();
+      }
+      if ('geminiApiKey' in cloudData) {
+        state.geminiApiKey = cloudData.geminiApiKey || '';
+        LS.set('geminiApiKey', state.geminiApiKey);
+        window.loadGeminiApiKeyInput?.();
+      }
+      if ('geminiModel' in cloudData) {
+        state.geminiModel = cloudData.geminiModel || '';
+        LS.set('geminiModel', state.geminiModel);
+      }
+      if ('aiTier' in cloudData) {
+        state.aiTier = cloudData.aiTier || 'low';
+        LS.set('aiTier', state.aiTier);
+      }
+      if ('telegramToken' in cloudData) {
+        state.telegramToken = cloudData.telegramToken || '';
+        LS.set('tgToken', state.telegramToken);
+      }
+      if ('telegramChatId' in cloudData) {
+        state.telegramChatId = cloudData.telegramChatId || '';
+        LS.set('tgChatId', state.telegramChatId);
+      }
+      window.loadTelegramInputs?.();
+
+      if (state.geminiApiKey) {
+        checkAndDiscoverGeminiModels(state.geminiApiKey, true);
       }
 
       updateCurrencyUI();
@@ -3541,6 +3596,18 @@ async function handleLogout() {
   }
   currentAuthUser = null;
   localStorage.removeItem('cloud_last_sync');
+  // Bersihkan data API key/kredensial akun aktif dari perangkat
+  state.geminiApiKey = '';
+  state.geminiModel = '';
+  state.telegramToken = '';
+  state.telegramChatId = '';
+  LS.set('geminiApiKey', '');
+  LS.set('geminiModel', '');
+  LS.set('tgToken', '');
+  LS.set('tgChatId', '');
+  window.loadGeminiApiKeyInput?.();
+  window.loadTelegramInputs?.();
+
   updateCloudAccountUI();
   showToast(t('toast_logout_success'), 'info');
 }
@@ -5305,6 +5372,7 @@ function onReceiptTierChange(tier) {
 
   updateReceiptGeminiStatus();
   updateReceiptTierHint();
+  if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
   showToast(`Kualitas AI disetel ke: ${AI_TIERS[tier].label}`, 'info');
 }
 window.onReceiptTierChange = onReceiptTierChange;
@@ -5437,6 +5505,7 @@ function onReceiptModelChange(model) {
   state.geminiModel = model;
   LS.set('geminiModel', model);
   updateReceiptGeminiStatus();
+  if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
   showToast(`Model AI diganti ke: ${model}`, 'info');
 }
 
@@ -5663,6 +5732,7 @@ async function saveGeminiApiKeyFromScanner() {
     if (settingsInput) settingsInput.value = val;
 
     await checkAndDiscoverGeminiModels(val, false);
+    if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = origText; }
   }
@@ -5680,11 +5750,13 @@ window.saveGeminiApiKey = async function() {
     LS.set('geminiModel', '');
     updateReceiptGeminiStatus();
     showToast('Gemini API Key dihapus', 'info');
+    if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
     return;
   }
 
   showToast('🔍 Memverifikasi API Key & mendeteksi model...', 'info');
   await checkAndDiscoverGeminiModels(val, false);
+  if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
 };
 
 window.loadGeminiApiKeyInput = function() {
@@ -6906,7 +6978,7 @@ function showToast(msg, type = 'info') {
 
 /* ── PWA ───────────────────────────────────── */
 // Ubah angka ini kalau mau force update service worker cache
-const SW_VERSION = '20260916';
+const SW_VERSION = '20260924';
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -7164,6 +7236,7 @@ function setupEventListeners() {
     state.telegramChatId = chatId;
     LS.set('tgToken',  token);
     LS.set('tgChatId', chatId);
+    if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
     showToast(t('toast_tg_saved'), 'success');
   };
 
