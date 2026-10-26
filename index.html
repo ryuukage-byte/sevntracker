@@ -166,6 +166,29 @@ a { color: inherit; text-decoration: none; }
 .brand-ig:hover { color: var(--accent); }
 .header-actions { display: flex; gap: 10px; align-items: center; }
 
+/* ── NET WORTH SHOWCASE ────────────────────── */
+.hero-networth-badge { cursor: pointer; }
+.nw-back { background: none; border: none; color: var(--accent); font-size: 13px; font-weight: 700; cursor: pointer; padding: 0 0 12px; }
+.nw-hero { text-align: center; padding: 28px 20px; }
+.nw-hero-label { font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--warning); }
+.nw-hero-primary { font-family: 'JetBrains Mono', monospace; font-size: clamp(24px, 7vw, 34px); font-weight: 800; color: var(--text); letter-spacing: -.5px; margin: 10px 0 6px; word-break: break-all; }
+.nw-hero-secondary { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text2); }
+.nw-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.nw-row:last-child { border-bottom: none; }
+.nw-row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.nw-row-main { flex: 1; min-width: 0; }
+.nw-row-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nw-row-bar { height: 6px; border-radius: 4px; background: var(--bg3); margin-top: 6px; overflow: hidden; }
+.nw-row-bar span { display: block; height: 100%; border-radius: 4px; }
+.nw-row-amt { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.nw-row-sec { font-size: 11px; font-weight: 500; color: var(--text3); margin-top: 2px; }
+.nw-change { font-size: 12px; font-weight: 700; margin-top: 6px; }
+.nw-change.up { color: var(--success); }
+.nw-change.down { color: var(--danger); }
+.nw-hero-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
+.nw-rates { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text2); line-height: 1.7; }
+.nw-rates-meta { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
 /* ── CURRENCY BADGE (fast wallet cycle) ────── */
 .currency-badge {
   display: flex; align-items: center; justify-content: center; gap: 5px;
@@ -1666,7 +1689,7 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
             <div class="hero-wallet-tag" id="hero-wallet-tag" onclick="cycleWallet()" data-i18n="hero_select_wallet">💳 Pilih Dompet</div>
             <div class="hero-top-row">
               <div class="hero-label" data-i18n="hero_monthly_expense">Pengeluaran Bulan Ini</div>
-              <div class="hero-networth-badge" id="hero-networth-badge" title="Total kekayaan bersih dari semua dompet" data-i18n-title="hero_networth_tooltip">
+              <div class="hero-networth-badge" id="hero-networth-badge" role="button" tabindex="0" onclick="goTo('networth')" onkeydown="if(event.key==='Enter')goTo('networth')" title="Total kekayaan bersih dari semua dompet" data-i18n-title="hero_networth_tooltip">
                 <span class="hero-networth-label" data-i18n="hero_networth_label">💎 Net Worth</span>
                 <span class="hero-networth-val" id="hero-networth-val">Rp 0</span>
               </div>
@@ -1824,6 +1847,38 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
     </div>
   </main>
 
+  <!-- PAGE: NET WORTH SHOWCASE -->
+  <main class="page" id="page-networth">
+    <button type="button" class="nw-back" onclick="goTo('dashboard')" data-i18n="nw_back">← Kembali</button>
+    <div class="card nw-hero">
+      <div class="nw-hero-label" data-i18n="nw_total_label">💎 Total Net Worth</div>
+      <div class="nw-hero-primary" id="nw-total-primary">Rp 0</div>
+      <div class="nw-hero-secondary" id="nw-total-secondary"></div>
+      <div class="nw-change" id="nw-change"></div>
+      <div class="nw-hero-sub" id="nw-wallet-count"></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:6px" data-i18n="nw_breakdown_title">🧾 Rincian per Dompet</div>
+      <div id="nw-breakdown"></div>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:8px">
+        <div class="card-label" data-i18n="nw_trend_title">📈 Tren Net Worth (12 bulan)</div>
+        <span id="nw-trend-peak" class="text-muted" style="font-size:11px"></span>
+      </div>
+      <div class="chart-wrap" style="height:200px"><canvas id="nw-trend-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:6px" data-i18n="nw_by_currency_title">💱 Per Mata Uang</div>
+      <div id="nw-by-currency"></div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="margin-bottom:10px" data-i18n="nw_rates_title">🔄 Kurs yang Dipakai</div>
+      <div id="nw-rates-info" class="nw-rates"></div>
+    </div>
+    <div class="text-muted" style="font-size:12px; text-align:center" data-i18n="nw_settings_hint">Atur mata uang di Setelan → Tampilan Net Worth</div>
+  </main>
+
   <!-- PAGE: SETTINGS -->
   <main class="page" id="page-settings">
 
@@ -1889,6 +1944,30 @@ input:checked + .toggle-slider::before { transform: translateX(20px); }
           <option value="en">🇬🇧 English</option>
           <option value="ja">🇯🇵 日本語 (Japanese)</option>
         </select>
+      </div>
+    </div>
+
+    <!-- Net Worth Showcase Card -->
+    <div class="card">
+      <div class="card-label" style="margin-bottom:14px" data-i18n="settings_nw_title">🏆 Tampilan Net Worth</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <label style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; font-weight:700; color:var(--text2);">
+          <span data-i18n="settings_nw_primary">Mata uang utama</span>
+          <select id="nw-primary-select" class="form-input" style="padding:12px; border-radius:12px; background:var(--bg2); color:var(--text1); border:1px solid var(--border);" onchange="setNwPrimary(this.value)">
+            <option value="IDR">🇮🇩 IDR</option>
+            <option value="JPY">🇯🇵 JPY</option>
+            <option value="USD">🇺🇸 USD</option>
+          </select>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; font-weight:700; color:var(--text2);">
+          <span data-i18n="settings_nw_secondary">Mata uang sekunder</span>
+          <select id="nw-secondary-select" class="form-input" style="padding:12px; border-radius:12px; background:var(--bg2); color:var(--text1); border:1px solid var(--border);" onchange="setNwSecondary(this.value)">
+            <option value="" data-i18n="settings_nw_none">— Tidak ada —</option>
+            <option value="IDR">🇮🇩 IDR</option>
+            <option value="JPY">🇯🇵 JPY</option>
+            <option value="USD">🇺🇸 USD</option>
+          </select>
+        </label>
       </div>
     </div>
 
@@ -2762,11 +2841,12 @@ function walletAmountFor(t, w) {
   return toDisplay(t.amount, w.currency);
 }
 // Current balance of a wallet = initial balance +/- every transaction touching it
-function getWalletBalance(id) {
+function getWalletBalance(id, upTo = null) {
   const w = getWallet(id);
   if (!w) return 0;
   let bal = w.initialBalance || 0;
   state.transactions.forEach(t => {
+    if (upTo && (t.date || '').slice(0, 10) > upTo) return;
     if (t.type === 'transfer') {
       if (t.walletId === id)   bal -= walletAmountFor(t, w);
       if (t.toWalletId === id) bal += walletAmountFor(t, w);
@@ -2786,6 +2866,201 @@ function getNetWorth() {
     totalIDR += toIDR(getWalletBalance(w.id), w.currency);
   });
   return totalIDR;
+}
+
+/* ── NET WORTH SHOWCASE ────────────────────── */
+// Per-wallet rows for the showcase. Each item:
+// { id, name, icon, color, primaryAmount, secondaryAmount, share }
+// primaryAmount / secondaryAmount are in their display currency; share is 0..1 of the total.
+function buildNetWorthBreakdown(primary, secondary) {
+  // Saldo tiap dompet dinilai dalam IDR dulu, sama seperti getNetWorth(), supaya jumlahnya cocok dengan total
+  const rows = state.wallets.map(w => ({ w, idrAmount: toIDR(getWalletBalance(w.id), w.currency) }));
+  // Penyebut share hanya dari saldo positif; saldo negatif tetap tampil tapi tidak punya bar
+  const positiveTotal = rows.reduce((sum, r) => sum + Math.max(0, r.idrAmount), 0);
+  return rows
+    .sort((a, b) => b.idrAmount - a.idrAmount)
+    .map(({ w, idrAmount }) => ({
+      id: w.id,
+      name: w.name,
+      icon: w.icon,
+      color: w.color,
+      primaryAmount: toDisplay(idrAmount, primary),
+      secondaryAmount: secondary ? toDisplay(idrAmount, secondary) : 0,
+      share: positiveTotal > 0 ? Math.max(0, idrAmount) / positiveTotal : 0,
+    }));
+}
+
+function getNwLocale() {
+  return currentLang === 'ja' ? 'ja-JP' : (currentLang === 'en' ? 'en-US' : 'id-ID');
+}
+// Tanggal akhir bulan relatif terhadap bulan ini (0 = hari ini, -1 = akhir bulan lalu, dst.)
+function nwMonthEnd(monthOffset = 0) {
+  if (monthOffset === 0) return todayStr();
+  const d = new Date(new Date().getFullYear(), new Date().getMonth() + monthOffset + 1, 0);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+// Total net worth dalam IDR sampai tanggal tertentu (saldo tiap dompet pada tanggal itu)
+function getNetWorthIDRAt(dateStr) {
+  return state.wallets.reduce((sum, w) => sum + toIDR(getWalletBalance(w.id, dateStr), w.currency), 0);
+}
+// Net worth per bulan, dari bulan transaksi paling awal sampai bulan ini (maks. 12 bulan terakhir)
+function buildNetWorthTrend(maxMonths = 12) {
+  const now = new Date();
+  let firstOffset = 0;
+  state.transactions.forEach(t => {
+    const d = new Date((t.date || '').slice(0, 10) + 'T00:00:00');
+    const off = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+    if (off < firstOffset) firstOffset = off;
+  });
+  const points = [];
+  for (let off = Math.max(firstOffset, 1 - maxMonths); off <= 0; off++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + off, 1);
+    points.push({
+      label: d.toLocaleDateString(getNwLocale(), { month: 'short', year: '2-digit' }),
+      idr: getNetWorthIDRAt(nwMonthEnd(off)),
+    });
+  }
+  return points;
+}
+// Perubahan net worth dibanding akhir bulan lalu (dalam IDR)
+function getNetWorthChange() {
+  const prevIDR = getNetWorthIDRAt(nwMonthEnd(-1));
+  return { deltaIDR: getNetWorth() - prevIDR, prevIDR };
+}
+// Saldo dompet dijumlah per mata uang, dalam mata uang aslinya
+function buildCurrencyBreakdown() {
+  const byCur = {};
+  state.wallets.forEach(w => {
+    byCur[w.currency] = (byCur[w.currency] || 0) + getWalletBalance(w.id);
+  });
+  return Object.entries(byCur).map(([cur, amount]) => ({ cur, amount }));
+}
+function renderNetWorthTrend(primary) {
+  const canvas = document.getElementById('nw-trend-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const points = buildNetWorthTrend();
+  const peak = points.reduce((best, p) => (p.idr > best.idr ? p : best), points[0]);
+  const peakEl = document.getElementById('nw-trend-peak');
+  if (peakEl) peakEl.textContent = `${t('nw_peak_label')}: ${peak.label} · ${fmt(toDisplay(peak.idr, primary), primary)}`;
+  if (state.chartInstances.nwTrend) state.chartInstances.nwTrend.destroy();
+  state.chartInstances.nwTrend = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: points.map(p => p.label),
+      datasets: [{
+        label: 'Net Worth',
+        data: points.map(p => toDisplay(p.idr, primary)),
+        borderColor: '#7c6fe0', backgroundColor: 'rgba(124,111,224,.15)',
+        fill: true, tension: .3, pointRadius: 3,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => fmt(c.parsed.y, primary) } },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: getChartColors(), font: { size: 10, family: 'Plus Jakarta Sans', weight: '600' } } },
+        y: {
+          grid: { color: state.darkMode ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)' },
+          ticks: { color: getChartColors(), font: { size: 10, family: 'JetBrains Mono' } },
+        },
+      },
+    },
+  });
+}
+
+function renderNetWorthShowcase() {
+  const primary = state.nwPrimary;
+  const secondary = state.nwSecondary || null;
+  setText('nw-total-primary', fmt(toDisplay(getNetWorth(), primary), primary));
+  const secEl = document.getElementById('nw-total-secondary');
+  if (secEl) secEl.textContent = secondary ? `≈ ${fmt(toDisplay(getNetWorth(), secondary), secondary)}` : '';
+
+  const list = document.getElementById('nw-breakdown');
+  if (!list) return;
+  const items = buildNetWorthBreakdown(primary, secondary);
+  if (!items.length) {
+    list.innerHTML = `<div class="text-muted text-center" style="padding:16px">${t('nw_empty')}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(it => `
+    <div class="nw-row">
+      <div class="nw-row-icon" style="background:${it.color}33">${it.icon}</div>
+      <div class="nw-row-main">
+        <div class="nw-row-name">${esc(it.name)}</div>
+        <div class="nw-row-bar"><span style="width:${Math.min(100, Math.max(0, it.share * 100))}%;background:${it.color}"></span></div>
+      </div>
+      <div class="nw-row-amt">
+        <div>${fmt(it.primaryAmount, primary)}</div>
+        ${secondary ? `<div class="nw-row-sec">≈ ${fmt(it.secondaryAmount, secondary)}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  const countEl = document.getElementById('nw-wallet-count');
+  if (countEl) countEl.textContent = t('nw_from_wallets').replace('{n}', state.wallets.length);
+
+  const changeEl = document.getElementById('nw-change');
+  if (changeEl) {
+    const { deltaIDR, prevIDR } = getNetWorthChange();
+    const up = deltaIDR >= 0;
+    const pct = prevIDR !== 0 ? ` (${up ? '+' : '−'}${Math.abs(deltaIDR / Math.abs(prevIDR) * 100).toFixed(1)}%)` : '';
+    changeEl.textContent = `${up ? '▲' : '▼'} ${fmt(Math.abs(toDisplay(deltaIDR, primary)), primary)}${pct} ${t('nw_change_vs')}`;
+    changeEl.className = `nw-change ${up ? 'up' : 'down'}`;
+  }
+
+  renderNetWorthTrend(primary);
+
+  const curEl = document.getElementById('nw-by-currency');
+  if (curEl) {
+    const curs = buildCurrencyBreakdown();
+    curEl.innerHTML = curs.length ? curs.map(({ cur, amount }) => `
+      <div class="nw-row">
+        <div class="nw-row-icon" style="background:var(--bg3)">${CURRENCIES[cur]?.flag || '💱'}</div>
+        <div class="nw-row-main"><div class="nw-row-name">${CURRENCIES[cur]?.name || cur} · ${cur}</div></div>
+        <div class="nw-row-amt">
+          <div>${fmt(amount, cur)}</div>
+          ${cur !== primary ? `<div class="nw-row-sec">≈ ${fmt(toDisplay(toIDR(amount, cur), primary), primary)}</div>` : ''}
+        </div>
+      </div>`).join('') : `<div class="text-muted text-center" style="padding:16px">${t('nw_empty')}</div>`;
+  }
+
+  const ratesEl = document.getElementById('nw-rates-info');
+  if (ratesEl) {
+    const when = state.ratesUpdatedAt
+      ? new Date(state.ratesUpdatedAt).toLocaleString(getNwLocale(), { dateStyle: 'medium', timeStyle: 'short' })
+      : t('nw_rate_never');
+    const src = state.ratesSource === 'realtime' ? t('nw_rate_realtime') : t('nw_rate_manual');
+    ratesEl.innerHTML = `
+      <div>1 USD = ${fmt(getRate('USD'), 'IDR')}</div>
+      <div>1 JPY = ${fmt(getRate('JPY'), 'IDR')}</div>
+      <div class="nw-rates-meta">${src} · ${when}</div>`;
+  }
+}
+
+function syncNwSettingsUI() {
+  const p = document.getElementById('nw-primary-select');
+  const s = document.getElementById('nw-secondary-select');
+  if (p) p.value = state.nwPrimary;
+  if (s) s.value = state.nwSecondary || '';
+}
+
+function setNwPrimary(cur) {
+  state.nwPrimary = cur;
+  LS.set('nwPrimary', cur);
+  // Kalau sekunder sama dengan utama, geser ke mata uang lain
+  if (state.nwSecondary === cur) {
+    state.nwSecondary = cur === 'IDR' ? 'USD' : 'IDR';
+    LS.set('nwSecondary', state.nwSecondary);
+  }
+  syncNwSettingsUI();
+}
+
+function setNwSecondary(cur) {
+  state.nwSecondary = cur; // '' = tidak ada sekunder
+  LS.set('nwSecondary', cur);
+  syncNwSettingsUI();
 }
 
 function getCurrencySymbol(cur = state.currency) {
@@ -3648,6 +3923,8 @@ function loadData() {
   }
   state.availableGeminiModels = LS.get('availableGeminiModels') || [];
   state.aiTier         = LS.get('aiTier')          || 'low';
+  state.nwPrimary      = LS.get('nwPrimary')       || 'IDR';
+  state.nwSecondary    = LS.get('nwSecondary') ?? 'USD';
   state.wallets        = LS.get('wallets')         || [...DEFAULT_WALLETS];
   state.headerWalletId = LS.get('headerWalletId')  || null;
   if (!state.headerWalletId && getWallets().length) {
@@ -3735,7 +4012,9 @@ function goTo(tab) {
   if (tab === 'history')   renderHistory();
   if (tab === 'calendar')  renderCalendar();
   if (tab === 'dashboard') renderDashboard();
+  if (tab === 'networth')  renderNetWorthShowcase();
   if (tab === 'settings') {
+    syncNwSettingsUI();
     loadBudgetInputs();
     renderCatRename();
     updateRateDisplay();
@@ -3776,7 +4055,8 @@ window.addEventListener('popstate', (e) => {
     if (tab === 'history')   renderHistory();
     if (tab === 'calendar')  renderCalendar();
     if (tab === 'dashboard') renderDashboard();
-    if (tab === 'settings') { loadBudgetInputs(); updateRateDisplay(); if (typeof updateCloudAccountUI === 'function') updateCloudAccountUI(); window.loadGeminiApiKeyInput?.(); }
+    if (tab === 'networth')  renderNetWorthShowcase();
+    if (tab === 'settings') { syncNwSettingsUI(); loadBudgetInputs(); updateRateDisplay(); if (typeof updateCloudAccountUI === 'function') updateCloudAccountUI(); window.loadGeminiApiKeyInput?.(); }
   }
   // Kalau sudah di dashboard dan back lagi → browser exit sendiri (behavior normal)
 });
@@ -6978,7 +7258,7 @@ function showToast(msg, type = 'info') {
 
 /* ── PWA ───────────────────────────────────── */
 // Ubah angka ini kalau mau force update service worker cache
-const SW_VERSION = '20260924';
+const SW_VERSION = '20261027';
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
